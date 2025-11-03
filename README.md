@@ -6,4 +6,7 @@ I will use AI assistance to learn and to implement this. However, I will impleme
 
 In general, the /plans directory contains a plan for a day in DD-MM-YYYY format, so I can track my progress as I gradually focus on each specific target.
 
-This is also a learning ground for me to master new shiny AI-assisted coding tools, such as Cursor and Claude Code.
+This is also a learning ground for me to master new shiny AI-assisted coding tools, such as:
+1. Cursor for the first time.
+2. Claude Code, used reguralry.
+3. Claude Code Learning Style Plugin https://github.com/anthropics/claude-code/tree/main/plugins/learning-output-style

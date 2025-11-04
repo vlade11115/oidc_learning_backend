@@ -1,12 +1,11 @@
 run:
   fastapi dev main.py
 
-
 format:
   uv run ruff format .
 
 
-lint: format
+lint:
   uv run ruff check .
 
 test:

@@ -291,6 +291,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "httpx" },
     { name = "pytest" },
     { name = "ruff" },
     { name = "ty" },
@@ -301,6 +302,7 @@ requires-dist = [{ name = "fastapi", extras = ["standard"], specifier = ">=0.121
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "pytest", specifier = ">=8.4.2" },
     { name = "ruff", specifier = ">=0.14.3" },
     { name = "ty", specifier = ">=0.0.1a25" },

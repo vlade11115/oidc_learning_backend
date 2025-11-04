@@ -6,6 +6,7 @@ format:
 
 
 lint:
+  uv lock --check
   uv run ruff check .
 
 test:

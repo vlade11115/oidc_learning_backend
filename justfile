@@ -1,5 +1,5 @@
 run:
-  fastapi dev main.py
+  uv run fastapi dev src/main.py
 
 format:
   uv run ruff format .

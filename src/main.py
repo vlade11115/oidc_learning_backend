@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-
+# TODO: Make OIDC-compliant by mark optional parameters as None
 class AuthorizeRequest(BaseModel):
     client_id: str
     response_type: str

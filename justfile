@@ -1,0 +1,19 @@
+run:
+  uv run fastapi dev src/main.py
+
+format:
+  uv run ruff format .
+
+
+lint:
+  uv lock --check
+  uv run ruff check .
+
+test:
+  uv run pytest
+
+type-check:
+  uv run ty check
+
+ci: lint test type-check
+  @echo  "CI passed"

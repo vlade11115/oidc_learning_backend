@@ -15,5 +15,9 @@ test:
 type-check:
   uv run ty check
 
+schemathesis:
+  @echo "Running schemathesis tests. As of now, only local"
+  uv run schemathesis run http://127.0.0.1:8000/openapi.json
+
 ci: lint test type-check
   @echo  "CI passed"

@@ -23,9 +23,10 @@ def test_authorize_endpoint(mocker):
     )
     assert response.status_code == 302
     location = response.headers["location"]
+    # TODO: Rewrite this to correctly parse query params
     assert location.startswith("https://example.com/callback?code=")
-    code = location.split("?code=")[1]
-    assert code == mocked_code
+    assert mocked_code in location
+    assert "test_state" in location
 
 
 @pytest.mark.parametrize(

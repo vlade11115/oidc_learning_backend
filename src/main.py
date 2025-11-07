@@ -4,16 +4,14 @@ import uuid
 from fastapi import FastAPI, Query
 from annotated_types import Len
 from fastapi.responses import RedirectResponse
-from pydantic import AfterValidator, Field, HttpUrl
-
-from pydantic import BaseModel
+from pydantic import AfterValidator, Field, HttpUrl, BaseModel
 
 from yarl import URL
 
 app = FastAPI()
 
 
-def check_safe_url(url: HttpUrl):
+def check_safe_url(url: HttpUrl) -> HttpUrl:
     """
     Using yarl, check the following:
     1. URL is absolute
@@ -58,5 +56,8 @@ def new_code() -> str:
 def authorize_endpoint(request: Annotated[AuthorizeRequest, Query()]):
     code = new_code()
     url = URL(str(request.redirect_uri))
-    url = url.with_query({"code": code})
+    query_params = {"code": code}
+    if state := request.state:
+        query_params["state"] = state
+    url = url.update_query(query_params)
     return str(url)

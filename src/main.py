@@ -1,25 +1,63 @@
-from typing import Annotated
+from typing import Annotated, Literal
+import uuid
 
 from fastapi import FastAPI, Query
-from pydantic import BaseModel
+from annotated_types import Len
+from fastapi.responses import RedirectResponse
+from pydantic import AfterValidator, Field, HttpUrl, BaseModel
+
+from yarl import URL
 
 app = FastAPI()
 
-# TODO: Make OIDC-compliant by mark optional parameters as None
+
+def check_safe_url(url: HttpUrl) -> HttpUrl:
+    """
+    Using yarl, check the following:
+    1. URL is absolute
+    2. URL is HTTPS, if not localhost
+    """
+    url_to_check = URL(str(url))
+    if not url_to_check.absolute:
+        raise ValueError("Should be absolute URL")
+    if url_to_check.scheme != "https" and url_to_check.host != "localhost":
+        raise ValueError("URL should be HTTPS")
+    if url_to_check.host == "localhost":
+        if not url_to_check.port:
+            raise ValueError("localhost URL should explicitly contain port")
+        if url_to_check.port < 443:
+            raise ValueError("localhost URL port should be more than 443")
+    return url
+
+
 class AuthorizeRequest(BaseModel):
     client_id: str
-    response_type: str
-    scope: str
-    redirect_uri: str
-    state: str
+    response_type: Literal["code"]  # For now, only support authorization code flow
+    scope: str | None = None
+    redirect_uri: Annotated[
+        HttpUrl,
+        Len(min_length=1, max_length=2048),
+        AfterValidator(check_safe_url),
+        Field(
+            examples=[
+                "http://localhost:8000/callback",
+            ],
+            description="The redirect URI where the authorization code will be sent. Must be HTTPS (except localhost with port > 443).",
+        ),
+    ]
+    state: str | None = None
 
 
-@app.get("/authorize")
+def new_code() -> str:
+    return str(uuid.uuid4())
+
+
+@app.get("/authorize", response_class=RedirectResponse, status_code=302)
 def authorize_endpoint(request: Annotated[AuthorizeRequest, Query()]):
-    return {
-        "client_id": request.client_id,
-        "response_type": request.response_type,
-        "scope": request.scope,
-        "redirect_uri": request.redirect_uri,
-        "state": request.state,
-    }
+    code = new_code()
+    url = URL(str(request.redirect_uri))
+    query_params = {"code": code}
+    if state := request.state:
+        query_params["state"] = state
+    url = url.update_query(query_params)
+    return str(url)

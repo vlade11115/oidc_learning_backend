@@ -4,7 +4,7 @@ import uuid
 from fastapi import FastAPI, Query
 from annotated_types import Len
 from fastapi.responses import RedirectResponse
-from pydantic import AfterValidator, HttpUrl
+from pydantic import AfterValidator, Field, HttpUrl
 
 from pydantic import BaseModel
 
@@ -37,7 +37,15 @@ class AuthorizeRequest(BaseModel):
     response_type: str
     scope: str | None = None
     redirect_uri: Annotated[
-        HttpUrl, Len(min_length=1, max_length=2048), AfterValidator(check_safe_url)
+        HttpUrl,
+        Len(min_length=1, max_length=2048),
+        AfterValidator(check_safe_url),
+        Field(
+            examples=[
+                "http://localhost:8000/callback",
+            ],
+            description="The redirect URI where the authorization code will be sent. Must be HTTPS (except localhost with port > 443).",
+        ),
     ]
     state: str | None = None
 

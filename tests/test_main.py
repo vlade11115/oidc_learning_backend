@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 import pytest
-
+from pydantic import HttpUrl
 from src.main import app, check_safe_url
 
 
@@ -29,13 +29,17 @@ def test_authorize_endpoint(mocker):
 
 
 def test_check_safe_url(mocker):
-    assert check_safe_url("https://example.com") == "https://example.com"
-    assert check_safe_url("http://localhost:3000") == "http://localhost:3000"
+    assert check_safe_url(HttpUrl("https://example.com")) == HttpUrl(
+        "https://example.com"
+    )
+    assert check_safe_url(HttpUrl("http://localhost:3000")) == HttpUrl(
+        "http://localhost:3000"
+    )
     with pytest.raises(ValueError):
-        assert check_safe_url("http://localhost")
+        assert check_safe_url(HttpUrl("http://localhost"))
     with pytest.raises(ValueError):
-        assert check_safe_url("http://localhost:200")
+        assert check_safe_url(HttpUrl("http://localhost:200"))
     with pytest.raises(ValueError):
-        assert check_safe_url("/foo")
+        assert check_safe_url(HttpUrl("/foo"))
     with pytest.raises(ValueError):
-        assert check_safe_url("http://example.com")
+        assert check_safe_url(HttpUrl("http://example.com"))

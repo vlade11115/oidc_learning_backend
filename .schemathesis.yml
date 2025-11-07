@@ -1,0 +1,27 @@
+# Schemathesis configuration for OIDC Learning Backend
+# https://schemathesis.readthedocs.io/en/stable/cli.html#configuration-file
+
+# Hypothesis settings
+hypothesis:
+  max_examples: 100
+  phases:
+    - explicit  # Use examples from OpenAPI spec
+    - generate  # Generate random test cases
+  deadline: 5000  # 5 seconds per test
+  derandomize: false
+
+# Test execution settings
+checks:
+  - not_a_server_error  # Flag 5xx responses as failures
+  - status_code_conformance  # Verify responses match OpenAPI spec
+  - content_type_conformance  # Verify content types match
+  - response_schema_conformance  # Verify response bodies match schemas
+
+# Network and performance
+request_timeout: 10  # seconds
+max_response_time: 1000  # ms
+
+# Test generation
+generation:
+  # Generate more realistic data using examples
+  with_security_parameters: true

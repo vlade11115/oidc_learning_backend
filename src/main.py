@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 import uuid
 
 from fastapi import FastAPI, Query
@@ -21,20 +21,20 @@ def check_safe_url(url: HttpUrl):
     """
     url_to_check = URL(str(url))
     if not url_to_check.absolute:
-        raise ValueError("Should be absoulte URL")
+        raise ValueError("Should be absolute URL")
     if url_to_check.scheme != "https" and url_to_check.host != "localhost":
         raise ValueError("URL should be HTTPS")
     if url_to_check.host == "localhost":
         if not url_to_check.port:
             raise ValueError("localhost URL should explicitly contain port")
         if url_to_check.port < 443:
-            raise ValueError("localhost URL port should be more that 443")
+            raise ValueError("localhost URL port should be more than 443")
     return url
 
 
 class AuthorizeRequest(BaseModel):
     client_id: str
-    response_type: str
+    response_type: Literal["code"]  # For now, only support authorization code flow
     scope: str | None = None
     redirect_uri: Annotated[
         HttpUrl,

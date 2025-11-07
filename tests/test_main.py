@@ -28,18 +28,29 @@ def test_authorize_endpoint(mocker):
     assert code == mocked_code
 
 
-def test_check_safe_url(mocker):
-    assert check_safe_url(HttpUrl("https://example.com")) == HttpUrl(
-        "https://example.com"
-    )
-    assert check_safe_url(HttpUrl("http://localhost:3000")) == HttpUrl(
-        "http://localhost:3000"
-    )
+@pytest.mark.parametrize(
+    "url_string",
+    [
+        "https://example.com",
+        "http://localhost:3000",
+    ],
+)
+def test_check_safe_url_valid_cases(url_string: str):
+    """Test that valid URLs pass check_safe_url validation."""
+    url = HttpUrl(url_string)
+    assert check_safe_url(url) == url
+
+
+@pytest.mark.parametrize(
+    "url_string",
+    [
+        "http://localhost",
+        "http://localhost:200",
+        "/foo",
+        "http://example.com",
+    ],
+)
+def test_check_safe_url_invalid_cases(url_string: str):
+    """Test that invalid URLs raise ValueError in check_safe_url."""
     with pytest.raises(ValueError):
-        assert check_safe_url(HttpUrl("http://localhost"))
-    with pytest.raises(ValueError):
-        assert check_safe_url(HttpUrl("http://localhost:200"))
-    with pytest.raises(ValueError):
-        assert check_safe_url(HttpUrl("/foo"))
-    with pytest.raises(ValueError):
-        assert check_safe_url(HttpUrl("http://example.com"))
+        check_safe_url(HttpUrl(url_string))

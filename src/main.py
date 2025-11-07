@@ -2,7 +2,9 @@ from typing import Annotated
 import uuid
 
 from fastapi import FastAPI, Query
+from annotated_types import Len
 from fastapi.responses import RedirectResponse
+from pydantic import AfterValidator
 
 from pydantic import BaseModel
 
@@ -11,11 +13,32 @@ from yarl import URL
 app = FastAPI()
 
 
+def check_safe_url(url: str):
+    """
+    Using yarl, check the following:
+    1. URL is absolute
+    2. URL is HTTPS, if not localhost
+    """
+    url_to_check = URL(url)
+    if not url_to_check.absolute:
+        raise ValueError("Should be absoulte URL")
+    if url_to_check.scheme != "https" and url_to_check.host != "localhost":
+        raise ValueError("URL should be HTTPS")
+    if url_to_check.host == "localhost":
+        if not url_to_check.port:
+            raise ValueError("localhost URL should explicitly contain port")
+        if url_to_check.port < 443:
+            raise ValueError("localhost URL port should be more that 443")
+    return url
+
+
 class AuthorizeRequest(BaseModel):
     client_id: str
     response_type: str
     scope: str | None = None
-    redirect_uri: str
+    redirect_uri: Annotated[
+        str, Len(min_length=1, max_length=2048), AfterValidator(check_safe_url)
+    ]
     state: str | None = None
 
 
@@ -23,9 +46,11 @@ def new_code() -> str:
     return str(uuid.uuid4())
 
 
-@app.get("/authorize", response_class=RedirectResponse)
+@app.get("/authorize", response_class=RedirectResponse, status_code=302)
 def authorize_endpoint(request: Annotated[AuthorizeRequest, Query()]):
     code = new_code()
     url = URL(request.redirect_uri)
+    # Only allow absolute URLs
+
     url = url.with_query({"code": code})
     return str(url)

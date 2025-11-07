@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
+import pytest
 
-from src.main import app
+from src.main import app, check_safe_url
 
 
 client = TestClient(app)
@@ -20,8 +21,21 @@ def test_authorize_endpoint(mocker):
         },
         follow_redirects=False,
     )
-    assert response.status_code == 307
+    assert response.status_code == 302
     location = response.headers["location"]
     assert location.startswith("https://example.com/callback?code=")
     code = location.split("?code=")[1]
     assert code == mocked_code
+
+
+def test_check_safe_url(mocker):
+    assert check_safe_url("https://example.com") == "https://example.com"
+    assert check_safe_url("http://localhost:3000") == "http://localhost:3000"
+    with pytest.raises(ValueError):
+        assert check_safe_url("http://localhost")
+    with pytest.raises(ValueError):
+        assert check_safe_url("http://localhost:200")
+    with pytest.raises(ValueError):
+        assert check_safe_url("/foo")
+    with pytest.raises(ValueError):
+        assert check_safe_url("http://example.com")

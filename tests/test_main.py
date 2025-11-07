@@ -6,7 +6,9 @@ from src.main import app
 client = TestClient(app)
 
 
-def test_authorize_endpoint():
+def test_authorize_endpoint(mocker):
+    mocked_code = "1234567890"
+    mocker.patch("src.main.new_code", return_value=mocked_code)
     response = client.get(
         "/authorize",
         params={
@@ -19,6 +21,7 @@ def test_authorize_endpoint():
         follow_redirects=False,
     )
     assert response.status_code == 307
-    assert (
-        response.headers["location"] == "https://example.com/callback?code=1234567890"
-    )
+    location = response.headers["location"]
+    assert location.startswith("https://example.com/callback?code=")
+    code = location.split("?code=")[1]
+    assert code == mocked_code

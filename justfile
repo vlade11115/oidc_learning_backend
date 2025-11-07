@@ -4,7 +4,6 @@ run:
 format:
   uv run ruff format .
 
-
 lint:
   uv lock --check
   uv run ruff check .
